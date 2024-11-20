@@ -1,0 +1,62 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+
+/* Additional styles */
+@import "additional-styles/utility-patterns.css";
+@import "additional-styles/flatpickr.css";
+
+@import "tailwindcss/utilities";
+/* w-full border-0 placeholder:text-gray-400 bg-gray-50 dark:bg-gray-600 rounded-lg py-2 px-3 shadow dark:shadow-inner focus:ring-2 focus:ring-blue-300 focus:outline-none transition-all duration-300 no-arrows */
+/* TimeField Custom Style */
+/* bg-color */
+.custom-time-field .MuiOutlinedInput-root {
+  @apply bg-gray-50 rounded-lg dark:bg-gray-600 text-slate-500 dark:text-slate-100 py-2 px-3 h-[2.5rem] w-full active:ring-2 active:ring-blue-300 focus:ring-2 focus:ring-blue-300 focus:outline-none transition-all duration-300;
+}
+
+/* Custom label color */
+/* .custom-time-field .MuiInputLabel-root {
+  @apply bg-gray-50 dark:bg-gray-600; 
+} */
+
+.custom-time-field .MuiOutlinedInput-root fieldset {
+  @apply hover:border-slate-300 focus:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 dark:focus:border-slate-600 shadow-sm /* Ensure default border color is transparent */;
+}
+
+.custom-time-field .MuiOutlinedInput-input:focus {
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0); /* Customize focus shadow */
+}
+
+/* TimeField Custom Style */
+.custom-date-field .MuiOutlinedInput-root {
+  @apply bg-white dark:bg-transparent py-2 text-slate-500 dark:text-slate-100 h-[2.5rem] text-sm;
+}
+
+.custom-date-field .MuiInputLabel-root {
+  @apply bg-gray-50 dark:bg-gray-600; /* Custom label color */
+}
+
+.custom-date-field .MuiOutlinedInput-root fieldset {
+  @apply border border-slate-500 hover:border-slate-300 focus:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 dark:focus:border-slate-600 shadow-sm  /* Ensure default border color is transparent */;
+}
+
+.custom-date-field .MuiOutlinedInput-input:focus {
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0); /* Customize focus shadow */
+}
+
+/* ################ Ticket List field ############### */
+.table-list-field {
+  @apply px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap;
+}
+.table-list-inner-field {
+  @apply font-medium text-slate-800 dark:text-slate-100;
+}
+
+.custom-time-field .MuiOutlinedInput-root:active {
+  /* Offset shadow */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 0 0 2px rgba(239, 68, 68, 1), /* red-500 */ 0 0 transparent; /* default fallback shadow */
+
+  /* Ring color and opacity */
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgba(239, 68, 68, var(--tw-ring-opacity)); /* red-500 */
+}

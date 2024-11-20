@@ -1,0 +1,70 @@
+// seats that were purchesed for other agencies 
+model PurchasedFlightTicket {
+    id       String       @id @default(cuid())
+    user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId   String
+    ticket   FlightTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+    ticketId String       @unique
+    seats    Int
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("purchasedFlightTickets")
+}
+
+// booked ticket 
+model BookedFlightSeat {
+    id             String                 @id @default(cuid())
+    flightTicket   FlightTicket           @relation(fields: [flightTicketId], references: [id], onDelete: Cascade)
+    flightTicketId String // O - M 
+    seatStatus     BookedFlightSeatStatus @default(booked)
+    totalPrice     Float
+    customerInfo   CustomerInfo           @relation(fields: [customerInfoId], references: [id])
+    customerInfoId String                 @unique
+    bookedByAgency String // agnecy who booked this booking 
+    agencyAgent    AgencyAgent?           @relation(fields: [bookedByAgent], references: [id])
+    bookedByAgent  String? // O - M agent who booked the seat
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("bookedFlightSeats")
+}
+
+enum BookedFlightSeatStatus {
+    booked
+    onHold
+    canceled
+}
+
+// booked customer's info 
+model CustomerInfo {
+    id             String               @id @default(cuid())
+    bookedSeat     BookedFlightSeat?
+    title          CustomerInfoTitle
+    gender         String
+    firstName      String
+    lastName       String
+    nationality    String
+    dateOfBirth    String
+    documentType   CustomerDocumentType
+    documentNumber String
+    issuingCountry String
+    expirationDate String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("customersInfo")
+}
+
+enum CustomerInfoTitle {
+    Mr
+    Mrs
+}
+
+enum CustomerDocumentType {
+    passport
+    id_card
+}

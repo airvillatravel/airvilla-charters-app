@@ -1,0 +1,201 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex", "driverAdapters", "prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// NOTES ////
+// - value inside @@map() is the name of the table in database 
+
+// user
+model User {
+  id                  String                  @id @default(cuid())
+  refId               String?                 @unique
+  firstName           String
+  lastName            String
+  username            String                  @unique
+  agencyName          String?
+  email               String                  @unique
+  hashedPassword      String
+  nationality         String?
+  dateOfBirth         String?
+  gender              String?
+  logo                String?
+  website             String?
+  accountStatus       AccountStatus           @default(pending)
+  role                Role                    @default(affiliate)
+  address             UserAddress?            @relation(fields: [addressId], references: [id])
+  addressId           String?                 @unique // O - O 
+  verified            Boolean                 @default(false)
+  phoneNumber         String
+  phoneNumberVerified Boolean                 @default(true)
+  myTickets           FlightTicket[] // O - M
+  purchasedTickets    PurchasedFlightTicket[] // O - M
+  agents              AgencyAgent[] // O - M
+  ticketHistoryLogs   TicketHistoryLog[]
+  subscriptionStatus  SubscriptionStatus      @default(inactive)
+  lastLogin           DateTime?
+
+  iataNo                String? @default("")
+  commercialOperationNo String? @default("")
+
+  // tokenExpiresAt String? @default("")
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  Invitation Invitation[]
+
+  @@index([email])
+  @@map("users")
+}
+
+enum Role {
+  master
+  agency
+  affiliate
+}
+
+enum AccountStatus {
+  accepted
+  pending
+  rejected
+  suspended
+}
+
+enum SubscriptionStatus {
+  active
+  inactive
+}
+
+// user's address 
+model UserAddress {
+  id         String      @id @default(cuid())
+  country    String
+  city       String
+  street     String?
+  user       User?
+  TeamMember TeamMember?
+
+  @@map("userAddresses")
+}
+
+// agncy agent 
+model AgencyAgent {
+  id                String             @id @default(cuid())
+  firstName         String
+  lastName          String
+  username          String             @unique
+  hashedPassword    String
+  nationality       String
+  dateOfBirth       String
+  access            Boolean            @default(true)
+  agency            User               @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  agencyId          String // O - M
+  flightTicket      FlightTicket[] // 0 - M
+  bookedSeats       BookedFlightSeat[]
+  ticketHistoryLogs TicketHistoryLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("agencyAgents")
+}
+
+model Team {
+  id          String       @id @default(uuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  teamMembers TeamMember[]
+  Invitation  Invitation[]
+}
+
+model TeamMember {
+  // Base user fields (required)
+  id            String           @id @default(uuid())
+  refId         String?          @unique
+  username      String           @unique
+  firstName     String
+  lastName      String
+  email         String           @unique
+  password      String
+  agencyName    String?
+  nationality   String?
+  dateOfBirth   String?
+  gender        String?
+  logo          String?
+  website       String?
+  address       UserAddress?     @relation(fields: [addressId], references: [id])
+  addressId     String?          @unique // O - O 
+  // Team member specific fields (nullable)
+  role          TeamMemberRole
+  department    Department
+  status        TeamMemberStatus @default(active)
+  accountStatus AccountStatus    @default(accepted)
+  verified      Boolean          @default(true)
+  team          Team             @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  teamId        String
+  invitation    Invitation[]
+
+  lastLogin DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Invitation {
+  id           String           @id @default(uuid())
+  token        String           @unique
+  email        String           @unique
+  teamMember   TeamMember       @relation(fields: [teamMemberId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  teamMemberId String
+  team         Team             @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  teamId       String
+  invitedBy    User             @relation(fields: [invitedById], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  invitedById  String
+  status       InvitationStatus @default(pending)
+  role         TeamMemberRole
+  department   Department
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime         @default(now())
+}
+
+enum InvitationStatus {
+  pending
+  accepted
+  expired
+  rejected
+  revoked
+}
+
+enum TeamMemberRole {
+  master
+  moderator
+  accountant
+}
+
+enum TeamMemberStatus {
+  active
+  inactive
+  suspended
+}
+
+enum Department {
+  customer_support
+  management
+  finance
+  human_resources
+  marketing
+  sales
+  it
+  operations
+  research_development
+}

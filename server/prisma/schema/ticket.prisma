@@ -1,0 +1,127 @@
+// TICKET
+model FlightTicket {
+    id                String                 @id @default(cuid())
+    refId             String                 @unique
+    ticketStatus      String                 @default("pending")
+    description       String?
+    seats             Int
+    departure         FlightLocation?        @relation("ticketDeparture", fields: [departureId], references: [id])
+    departureId       String?                @unique // O - O
+    arrival           FlightLocation?        @relation("ticketArrival", fields: [arrivalId], references: [id])
+    arrivalId         String?                @unique // O - O
+    flightDate        String
+    departureTime     String?
+    arrivalTime       String?
+    duration          String?
+    stops             Int
+    owner             User                   @relation(fields: [ownerId], references: [id], onUpdate: Restrict, onDelete: Cascade)
+    ownerId           String // O - M agency who created the tickety 
+    agencyAgent       AgencyAgent?           @relation(fields: [agencyAgentId], references: [id], onUpdate: Restrict)
+    agencyAgentId     String? // O - M agent who created this ticket 
+    updated           Boolean                @default(false) // only when the ticket is validate and updated
+    bookedSeats       BookedFlightSeat[]
+    flightClasses     FlightClass[]
+    segments          FlightSegment[]
+    purchasedSeats    PurchasedFlightTicket?
+    ticketHistoryLogs TicketHistoryLog[]     @relation("TicketHistoryLogs")
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("flightTickets")
+}
+
+model TicketHistoryLog {
+    id            String       @id @default(cuid())
+    ticket        FlightTicket @relation("TicketHistoryLogs", fields: [ticketId], references: [id], onDelete: Cascade)
+    ticketId      String
+    changeType    String
+    changeDetails String?
+    oldValue      Json? // Stores old value (before update)
+    newValue      Json? // Stores new value (after update)
+    agency        User?        @relation(fields: [agencyId], references: [id])
+    agencyId      String?
+    agencyAgent   AgencyAgent? @relation(fields: [agencyAgentId], references: [id])
+    agencyAgentId String?
+
+    changedAt DateTime @default(now())
+
+    @@map("ticketHistoryLogs")
+}
+
+// flight seat class 
+model FlightClass {
+    id             String @id @default(cuid())
+    type           String
+    carryOnAllowed Int // Number of carry-on bags allowed
+    carryOnWeight  Float // Maximum weight for carry-on bags in kg
+    checkedAllowed Int // Number of checked bags allowed
+    checkedWeight  Float // Maximum weight for checked bags in kg
+    checkedFee     Float // Fee for the first checked bag
+    additionalFee  Float // Fee for additional checked bags
+
+    extraOffers    FlightExtraOffer[] // O - M
+    flightTicket   FlightTicket       @relation(fields: [flightTicketId], references: [id], onDelete: Cascade)
+    flightTicketId String
+    price          FlightPrice?
+
+    @@map("flightClasses")
+}
+
+// extra offers for each class 
+model FlightExtraOffer {
+    id            String      @id @default(cuid())
+    flightClass   FlightClass @relation(fields: [flightClassId], references: [id], onDelete: Cascade) // O - M 
+    flightClassId String
+    name          String?
+    available     String?
+
+    @@map("flightExtraOffer")
+}
+
+// PRICE 
+model FlightPrice {
+    id            String      @id @default(cuid())
+    adult         Float
+    child         Float
+    infant        Float
+    tax           Float?
+    currency      String      @default("JOD")
+    flightClass   FlightClass @relation(fields: [flightClassId], references: [id], onDelete: Cascade) // O - O
+    flightClassId String      @unique
+
+    @@map("flightPrices")
+}
+
+// fight segment [ticket has one stop = 2 segnment]
+model FlightSegment {
+    id             String         @id @default(cuid())
+    flightTicket   FlightTicket   @relation(fields: [flightTicketId], references: [id], onDelete: Cascade)
+    flightTicketId String
+    flightNumber   String
+    carrier        String
+    departure      FlightLocation @relation("SegmentDeparture", fields: [departureId], references: [id], onDelete: Cascade)
+    departureId    String         @unique // O - O
+    arrival        FlightLocation @relation("SegmentArrival", fields: [arrivalId], references: [id])
+    arrivalId      String         @unique // O - O
+    departureTime  String
+    arrivalTime    String
+    duration       String
+
+    @@map("flightSegments")
+}
+
+// flight location
+model FlightLocation {
+    id                String         @id @default(cuid())
+    airportCode       String
+    country           String
+    city              String
+    airport           String
+    ticketDepartures  FlightTicket?  @relation("ticketDeparture") // O - M 
+    ticketArrivals    FlightTicket?  @relation("ticketArrival") // O - M 
+    segmentDepartures FlightSegment? @relation("SegmentDeparture") // O - M 
+    segmentArrivals   FlightSegment? @relation("SegmentArrival") // O - M 
+
+    @@map("flightLocations")
+}
